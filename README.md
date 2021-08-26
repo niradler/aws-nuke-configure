@@ -1,6 +1,6 @@
 # aws-nuke-configure
 
-Im using [aws-nuke](https://github.com/rebuy-de/aws-nuke) quite a lot, but i have some issues with editing the configuration file manually, so this is why I created this simple cli, to manage the configuration file.
+Hi Im using [aws-nuke](https://github.com/rebuy-de/aws-nuke) quite a lot, but I have some issues with editing the configuration file manually, so I created a simple cli tool, to manage the configuration file.
 
 ## Setup
 
