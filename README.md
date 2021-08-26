@@ -1088,3 +1088,9 @@ presets:
         - type: glob
           value: "*admin*"
 ```
+
+### TODO:
+
+- set property? what is default?
+- type select
+- statement instead of condition

@@ -221,7 +221,7 @@ const guided = async (fileName = "nuke-config.yml") => {
         },
         {
           name: "type",
-          type: "input",
+          type: "input", //exact contains glob regex dateOlderThan
           message: "type:",
           when: (answers) => answers.usePreset === false,
         },
