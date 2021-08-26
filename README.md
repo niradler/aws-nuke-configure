@@ -1,6 +1,6 @@
 # aws-nuke-configure
 
-![Image of Yaktocat](https://niradler.github.com/aws-nuke-configure/configuration.PNG)
+![demo](https://github.com/niradler/aws-nuke-configure/blob/master/demo.png?raw=true)
 
 ```yaml
 regions:
