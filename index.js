@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const yaml = require("js-yaml");
 const program = require("commander");
 const fs = require("fs");
