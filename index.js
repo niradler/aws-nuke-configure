@@ -4,6 +4,11 @@ const fs = require("fs");
 const path = require("path");
 const inquirer = require("inquirer");
 
+inquirer.registerPrompt(
+  "autocomplete",
+  require("inquirer-autocomplete-prompt")
+);
+
 const resources = fs
   .readFileSync(path.join(__dirname, "resources.txt"), "utf8")
   .split("\n")
@@ -132,8 +137,15 @@ const guided = async (fileName = "nuke-config.yml") => {
         },
         {
           name: "resource",
-          type: "input",
           message: "resource:",
+          type: "autocomplete",
+          pageSize: 10,
+          source: async (answers, input) => {
+            if (!input) return resources;
+            return resources.filter((o) =>
+              o.toLowerCase().includes(input.toLowerCase())
+            );
+          },
         },
         {
           name: "type",
@@ -195,10 +207,17 @@ const guided = async (fileName = "nuke-config.yml") => {
         },
         {
           name: "resource",
-          type: "input",
           message: "resource:",
+          type: "autocomplete",
+          pageSize: 10,
           when: (answers) =>
             answers.usePreset === false && answers.all === false,
+          source: async (answers, input) => {
+            if (!input) return resources;
+            return resources.filter((o) =>
+              o.toLowerCase().includes(input.toLowerCase())
+            );
+          },
         },
         {
           name: "type",

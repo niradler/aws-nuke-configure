@@ -1,6 +1,6 @@
 {
   "name": "aws-nuke-configure",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Guided way to create and edit aws-nuke configuration file",
   "main": "index.js",
   "bin": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "commander": "^8.1.0",
     "inquirer": "^8.1.2",
+    "inquirer-autocomplete-prompt": "^1.4.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
