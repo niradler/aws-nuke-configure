@@ -1,5 +1,19 @@
 # aws-nuke-configure
 
+## Setup
+
+```sh
+npm i -g aws-nuke-configure
+```
+
+## Usage
+
+```sh
+aws-nuke-configure --fileName nuke-config.yml
+```
+
+This example configuration will generate the following configuration yaml.
+
 ![demo](https://github.com/niradler/aws-nuke-configure/blob/master/demo.png?raw=true)
 
 ```yaml
