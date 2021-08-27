@@ -51,30 +51,33 @@ const guided = async (fileName = "nuke-config.yml") => {
   let res, picks;
   try {
     const configPath = path.join(process.cwd(), fileName);
-    res = await inquirer.prompt([
-      {
-        name: "answer",
-        type: "confirm",
-        message: `Create nuke-config.yml? (or reuse ${configPath})`,
-      },
-    ]);
-    if (res.answer) {
-      if (fs.existsSync(configPath)) {
-        res = await inquirer.prompt([
-          {
-            name: "answer",
-            type: "confirm",
-            message: `Override existing file: (${fileName})`,
-          },
-        ]);
-      }
+    if (fs.existsSync(configPath)) {
+      res = await inquirer.prompt([
+        {
+          name: "answer",
+          type: "confirm",
+          message: `Load ${configPath}?`,
+        },
+      ]);
       if (res.answer) {
-        fs.writeFileSync(fileName, yaml.dump(config));
+        config = yaml.load(fs.readFileSync(configPath, "utf8"));
       } else {
+        console.log(`Please delete ${configPath} to start from scratch.`);
         process.exit(0);
       }
     } else {
-      config = yaml.load(fs.readFileSync(configPath, "utf8"));
+      res = await inquirer.prompt([
+        {
+          name: "answer",
+          type: "confirm",
+          message: `Create nuke-config.yml file at ${configPath}?`,
+        },
+      ]);
+      if (res.answer) {
+        fs.writeFileSync(configPath, yaml.dump(config));
+      } else {
+        process.exit(0);
+      }
     }
 
     res = await inquirer.prompt([
@@ -151,8 +154,9 @@ const guided = async (fileName = "nuke-config.yml") => {
         },
         {
           name: "type",
-          type: "input",
-          message: "type:",
+          type: "list",
+          message: "filter type:",
+          choices: ["exact", "contains", "glob", "regex", "dateOlderThan"],
         },
         {
           name: "value",
@@ -223,8 +227,9 @@ const guided = async (fileName = "nuke-config.yml") => {
         },
         {
           name: "type",
-          type: "input", //exact contains glob regex dateOlderThan
-          message: "type:",
+          type: "list",
+          message: "filter type:",
+          choices: ["exact", "contains", "glob", "regex", "dateOlderThan"],
           when: (answers) => answers.usePreset === false,
         },
         {
@@ -290,7 +295,7 @@ const guided = async (fileName = "nuke-config.yml") => {
         delete config[key];
       }
     });
-    fs.writeFileSync(fileName, yaml.dump(config));
+    fs.writeFileSync(configPath, yaml.dump(config));
   } catch (e) {
     console.log(e);
   }
