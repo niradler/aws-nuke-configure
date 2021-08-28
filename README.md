@@ -1091,5 +1091,5 @@ presets:
 
 ### TODO:
 
-- set property? what is default?
+- what is the default property?
 - statement instead of condition

@@ -5,6 +5,7 @@ const program = require("commander");
 const fs = require("fs");
 const path = require("path");
 const inquirer = require("inquirer");
+const regions = require("./regions");
 
 inquirer.registerPrompt(
   "autocomplete",
@@ -19,8 +20,8 @@ const resources = fs
 let config = {
   regions: [],
   "account-blocklist": [],
-  accounts: {},
   presets: {},
+  accounts: {},
 };
 
 const inputMany = async (
@@ -91,8 +92,9 @@ const guided = async (fileName = "nuke-config.yml") => {
       picks = await inputMany([
         {
           name: "answer",
-          type: "input",
+          type: "list",
           message: "region:",
+          choices: Object.keys(regions),
         },
       ]);
       picks.forEach((r) => config.regions.push(r.answer));
@@ -118,6 +120,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           name: "answer",
           type: "input",
           message: "Add account number:",
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
       ]);
       if (!Array.isArray(config["account-blocklist"])) {
@@ -139,6 +142,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           name: "name",
           type: "input",
           message: "name:",
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
         {
           name: "resource",
@@ -153,6 +157,11 @@ const guided = async (fileName = "nuke-config.yml") => {
           },
         },
         {
+          name: "property",
+          type: "input",
+          message: "property: (can be blank)",
+        },
+        {
           name: "type",
           type: "list",
           message: "filter type:",
@@ -162,6 +171,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           name: "value",
           type: "input",
           message: "value:",
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
       ]);
       picks.forEach((answers) => {
@@ -173,10 +183,20 @@ const guided = async (fileName = "nuke-config.yml") => {
           config["presets"][answers.name]["filters"] = {};
           config["presets"][answers.name]["filters"][answers.resource] = [];
         }
-        config["presets"][answers.name]["filters"][answers.resource].push({
-          type: answers.type,
-          value: answers.value,
-        });
+        if (
+          !Array.isArray(
+            config["presets"][answers.name]["filters"][answers.resource]
+          )
+        ) {
+          config["presets"][answers.name]["filters"][answers.resource] = [];
+        }
+        let filterObject = {};
+        if (answers.property) filterObject.property = answers.property;
+        if (answers.type) filterObject.type = answers.type;
+        if (answers.value) filterObject.value = answers.value;
+        config["presets"][answers.name]["filters"][answers.resource].push(
+          filterObject
+        );
       });
     }
 
@@ -193,6 +213,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           name: "account",
           type: "input",
           message: "Add account number:",
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
         {
           name: "usePreset",
@@ -204,6 +225,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           type: "input",
           message: "name:",
           when: (answers) => answers.usePreset === true,
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
         {
           name: "all",
@@ -226,6 +248,12 @@ const guided = async (fileName = "nuke-config.yml") => {
           },
         },
         {
+          name: "property",
+          type: "input",
+          message: "property: (can be blank)",
+          when: (answers) => answers.usePreset === false,
+        },
+        {
           name: "type",
           type: "list",
           message: "filter type:",
@@ -237,6 +265,7 @@ const guided = async (fileName = "nuke-config.yml") => {
           type: "input",
           message: "value:",
           when: (answers) => answers.usePreset === false,
+          validate: (input) => (input && input.length > 0 ? true : false),
         },
       ]);
       picks.forEach((answers) => {
@@ -264,10 +293,13 @@ const guided = async (fileName = "nuke-config.yml") => {
               ) {
                 config.accounts[answers.account]["filters"][resource] = [];
               }
-              config.accounts[answers.account]["filters"][resource].push({
-                type: answers.type,
-                value: answers.value,
-              });
+              let filterObject = {};
+              if (answers.property) filterObject.property = answers.property;
+              if (answers.type) filterObject.type = answers.type;
+              if (answers.value) filterObject.value = answers.value;
+              config.accounts[answers.account]["filters"][resource].push(
+                filterObject
+              );
             });
           } else {
             if (
@@ -278,21 +310,36 @@ const guided = async (fileName = "nuke-config.yml") => {
               config.accounts[answers.account]["filters"][answers.resource] =
                 [];
             }
-            config.accounts[answers.account]["filters"][answers.resource].push({
-              type: answers.type,
-              value: answers.value,
-            });
+            let filterObject = {};
+            if (answers.property) filterObject.property = answers.property;
+            if (answers.type) filterObject.type = answers.type;
+            if (answers.value) filterObject.value = answers.value;
+            config.accounts[answers.account]["filters"][answers.resource].push(
+              filterObject
+            );
           }
         }
       });
     }
 
     Object.keys(config).forEach((key) => {
-      const isArray = Array.isArray(config[key]);
-      if (isArray && config[key].length === 0) {
-        delete config[key];
-      } else if (!isArray && Object.keys(config[key]).length === 0) {
-        delete config[key];
+      try {
+        const isArray = Array.isArray(config[key]);
+        const isObject = typeof config[key] === "object";
+        if (isArray && config[key].length === 0) {
+          delete config[key];
+        } else if (
+          !isArray &&
+          isObject &&
+          Object.keys(config[key]).length === 0
+        ) {
+          delete config[key];
+        }
+        if (isArray && config[key]) {
+          config[key] = [...new Set(config[key])];
+        }
+      } catch (error) {
+        console.error("Format Error", key, error);
       }
     });
     fs.writeFileSync(configPath, yaml.dump(config));
