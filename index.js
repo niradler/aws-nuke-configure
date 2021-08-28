@@ -147,6 +147,11 @@ const guided = async (fileName = "nuke-config.yml", dry = false) => {
           validate: (input) => (input && input.length > 0 ? true : false),
         },
         {
+          name: "all",
+          type: "confirm",
+          message: "Apply to all resources?",
+        },
+        {
           name: "resource",
           message: "resource:",
           type: "autocomplete",
@@ -157,6 +162,7 @@ const guided = async (fileName = "nuke-config.yml", dry = false) => {
               o.toLowerCase().includes(input.toLowerCase())
             );
           },
+          when: (answers) => answers.all === false,
         },
         {
           name: "property",
@@ -188,18 +194,35 @@ const guided = async (fileName = "nuke-config.yml", dry = false) => {
             config["presets"][answers.name]["filters"]
           );
         }
-        config["presets"][answers.name]["filters"][answers.resource] =
-          initializeArray(
-            config["presets"][answers.name]["filters"][answers.resource]
-          );
+        if (answers.all) {
+          resources.forEach((resource) => {
+            config["presets"][answers.name]["filters"][resource] =
+              initializeArray(
+                config["presets"][answers.name]["filters"][resource]
+              );
 
-        let filterObject = {};
-        if (answers.property) filterObject.property = answers.property;
-        if (answers.type) filterObject.type = answers.type;
-        if (answers.value) filterObject.value = answers.value;
-        config["presets"][answers.name]["filters"][answers.resource].push(
-          filterObject
-        );
+            let filterObject = {};
+            if (answers.property) filterObject.property = answers.property;
+            if (answers.type) filterObject.type = answers.type;
+            if (answers.value) filterObject.value = answers.value;
+            config["presets"][answers.name]["filters"][resource].push(
+              filterObject
+            );
+          });
+        } else {
+          config["presets"][answers.name]["filters"][answers.resource] =
+            initializeArray(
+              config["presets"][answers.name]["filters"][answers.resource]
+            );
+
+          let filterObject = {};
+          if (answers.property) filterObject.property = answers.property;
+          if (answers.type) filterObject.type = answers.type;
+          if (answers.value) filterObject.value = answers.value;
+          config["presets"][answers.name]["filters"][answers.resource].push(
+            filterObject
+          );
+        }
       });
     }
 

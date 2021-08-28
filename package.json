@@ -1,6 +1,6 @@
 {
   "name": "aws-nuke-configure",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Guided way to create and edit aws-nuke configuration file",
   "main": "index.js",
   "bin": {
